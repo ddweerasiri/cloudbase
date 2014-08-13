@@ -1,0 +1,113 @@
+{
+id: “tomcat-123”
+name: “tomcat”
+description: “Represents a tomcat server”
+author: “denis weerasiri <denis@abc.com>”
+version: 1.0
+keyword: [web-application-engine]
+selection-attributes: {}
+configuration-attributes: {
+	resourceID: {
+	type: string,
+	description: “unique id of resource”,
+},
+	tomcatVersion: {
+	type: string,
+	description: “version of tomcat”,
+	default: “7.0.7”
+},
+host: {
+	type: string,
+	description: “host of the created tomcat”,
+	default: “”
+},
+port: {
+	type: int,
+	description: “port number of the created tomcat”,
+	default: “8080”
+},
+adminUser: {
+	type: string,
+	description: “username of the admin user”,
+	default: “root”
+},
+adminPassword: {
+	type: string,
+	description: “password of admin user”,
+	default: “password”
+}
+},
+mappers: [
+	{
+	“name”: “docker-cli”,
+“description”: “generates a docker specific the resource”,
+“base-image”: “tifayuki/java:java7”,
+“docker-commands”: [
+“RUN apt-get update”,
+“RUN DEBIAN_FRONTEND=noninteractive apt-get install -y wget pwgen”,
+“ENV TOMCAT_VERSION $tomcatVersion”,
+“ENV CATALINA_HOME /tomcat”,
+“RUN wget http://archive.apache.org/dist/tomcat/tomcat-8/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz -O tomcat.tar.gz”,
+“RUN tar zxf tomcat.tar.gz && rm tomcat.tar.gz && mv apache-tomcat* tomcat”,
+]
+},
+{	
+	“name”: “juju-cli”,
+“description”: “generates a juju specific the resource”,
+“configuration-file”: {
+"options": {
+
+    "adminPassword": {
+      "default": "$adminPassword", 
+      "type": "string", 
+      "description": "username of the admin user\u201d"
+    },
+    "tomcatVersion": {
+      "default": "$tomcatVersion", 
+      "type": "string", 
+      "description": "version of tomcat"
+    }, 
+    "host": {
+      "type": "string", 
+      "description": "host of the created tomcat"
+    }, 
+    "port": {
+      "default": $port, 
+      "type": "int", 
+      "description": "port number of the created tomcat"
+    }, 
+    "adminPassword": {
+      "default": "$adminPassword", 
+      "type": "string", 
+      "description": "password of admin user"
+    }
+}
+},
+“metadata-file”: {
+"categories": [
+    		"web-application-engine"
+  	], 
+"maintainer": "denis weerasiri <denis@abc.com>", 
+"name": "tomcat", 
+"provides": {
+    		"website": {
+      		"interface": "http"
+    		}
+  	}, 
+  	"description": "Represents a tomcat server"
+},
+“hooks”:[
+	{“install” : 
+“#!/bin/bash
+TOMCAT_VERSION=’config-get tomcatVersion’
+apt-get install openjdk-6-jre
+
+wget http://archive.apache.org/dist/tomcat/tomcat-8/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz -O tomcat.tar.gz
+tar zxf tomcat.tar.gz && rm tomcat.tar.gz && mv apache-tomcat* tomcat”
+}, 
+{“start”: “hook script”},
+{“stop”: “hook script”}
+]
+}
+]
+}
